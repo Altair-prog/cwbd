@@ -1,33 +1,48 @@
 import psycopg2
+from typing import List, Tuple
 
 
 class DBManager:
     """Класс подключается к БД PostgreSQL."""
-    def __init__(self, params):
+
+    def __init__(self, params: dict):
         self.conn = psycopg2.connect(dbname='hh', **params)
         self.cur = self.conn.cursor()
 
-    def get_companies_and_vacancies_count(self):
-        self.cur.execute(f"select company_name, open_vacancies from employers")
+    def get_companies_and_vacancies_count(self) -> List[Tuple[str, int]]:
+        self.cur.execute("SELECT company_name, open_vacancies FROM employers")
         return self.cur.fetchall()
 
-    def get_all_vacancies(self):
-        self.cur.execute(f"select employers.company_name, vacancies.vacancy_name, vacancies.salary_from, vacancies.vacancy_url from vacancies "
-                         f"join employers using(employer_id)")
+    def get_all_vacancies(self) -> List[Tuple[str, str, int, str]]:
+        self.cur.execute("""
+            SELECT employers.company_name, vacancies.vacancy_name, vacancies.salary_from, vacancies.vacancy_url
+            FROM vacancies
+            JOIN employers USING(employer_id)
+        """)
         return self.cur.fetchall()
 
-    def get_avg_salary(self):
-        self.cur.execute(f"select avg(salary_from) from vacancies")
+    def get_avg_salary(self) -> List[Tuple[float]]:
+        self.cur.execute("SELECT AVG(salary_from) FROM vacancies")
         return self.cur.fetchall()
 
-    def get_vacancies_with_higher_salary(self):
-        self.cur.execute(f"select vacancy_name, salary_from from vacancies "
-                         f"group by vacancy_name, salary_from having salary_from > (select avg(salary_from) from vacancies)"
-                         f"order by salary_from")
+    def get_vacancies_with_higher_salary(self) -> List[Tuple[str, int]]:
+        self.cur.execute("""
+            SELECT vacancy_name, salary_from
+            FROM vacancies
+            GROUP BY vacancy_name, salary_from
+            HAVING salary_from > (SELECT AVG(salary_from) FROM vacancies)
+            ORDER BY salary_from
+        """)
         return self.cur.fetchall()
 
-    def get_vacancies_with_keyword(self, word):
-        q = """SELECT * FROM vacancies
-                        WHERE LOWER(vacancy_name) LIKE %s"""
-        self.cur.execute(q, ('%' + word.lower() + '%',))
+    def get_vacancies_with_keyword(self, word: str) -> List[Tuple[int, str, int, str]]:
+        self.cur.execute("""
+            SELECT * FROM vacancies
+            WHERE LOWER(vacancy_name) LIKE %s
+        """, ('%' + word.lower() + '%',))
         return self.cur.fetchall()
+
+    def close(self) -> None:
+        """Закрытие соединения с базой данных."""
+        self.cur.close()
+        self.conn.close()
