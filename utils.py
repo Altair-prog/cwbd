@@ -4,15 +4,6 @@ from typing import List, Dict, Any
 
 
 def get_hh_ru_data(company_ids: List[str]) -> List[Dict[str, Any]]:
-    """
-    Получение данных c использованием API HH.ru.
-
-    Параметры:
-    - company_ids: Список строк, представляющих идентификаторы работодателей, для которых нужно получить данные.
-
-    Возвращает:
-    Список из словарей, (employers и vacancies) где каждый словарь содержит информацию о работодателе и список вакансий.
-    """
     params = {
         'area': 1,
         'page': 0,
@@ -38,11 +29,6 @@ def get_hh_ru_data(company_ids: List[str]) -> List[Dict[str, Any]]:
 
 
 def create_database(database_name: str, params: dict) -> None:
-    """Создание базы данных и таблиц для сохранения данных о компаниях и их вакансиях
-
-    :param database_name: (str) название базы данных, которую нужно создать
-    :param params: (dict) параметры подключения к базе данных
-    """
     conn = psycopg2.connect(dbname='postgres', **params)
     conn.autocommit = True
     cur = conn.cursor()
@@ -80,7 +66,6 @@ def create_database(database_name: str, params: dict) -> None:
 
 
 def save_data_to_database_emp(data: List[Dict[str, Any]], database_name: str, params: dict) -> None:
-    """Сохранение данных о компаниях в базу данных"""
     conn = psycopg2.connect(dbname=database_name, **params)
     with conn.cursor() as cur:
         for item in data:
@@ -96,7 +81,6 @@ def save_data_to_database_emp(data: List[Dict[str, Any]], database_name: str, pa
 
 
 def save_data_to_database_vac(data: List[Dict[str, Any]], database_name: str, params: dict) -> None:
-    """Сохранение данных о вакансиях в базу данных"""
     conn = psycopg2.connect(dbname=database_name, **params)
     with conn.cursor() as cur:
         for item in data:
