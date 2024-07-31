@@ -1,7 +1,6 @@
-from utils import create_database, save_data_to_database_emp, save_data_to_database_vac, get_hh_ru_data
-from config import config
-from DBManager import DBManager
-
+from utils.utils import create_database, save_data_to_database_emp, save_data_to_database_vac, get_hh_ru_data
+from config.config import config
+from db_manager.DBManager import DBManager
 
 def main():
     company_ids = [
@@ -47,7 +46,6 @@ def main():
             print("Введен неверный запрос")
     finally:
         db_manager.close()
-
 
 if __name__ == '__main__':
     main()
